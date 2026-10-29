@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Globe 3D Interactif</title>
+    <!-- Importation de la bibliothèque Globe.gl via le CDN -->
+    <script src="https://unpkg.com/globe.gl"></script>
+    
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0;
+            overflow: hidden; 
+            background-color: #000;
+        }
+        
+        /* Style de la pop-up d'information */
+        #info-popup {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* Caché par défaut */
+            pointer-events: none; /* Évite que la souris n'interfère avec le globe */
+            transform: translate(-50%, -120%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            min-width: 200px;
+            z-index: 10;
+        }
+
+        #info-popup h3 { 
+            margin: 0 0 10px 0; 
+            color: #1a73e8;
+            font-size: 1.2rem;
+        }
+        
+        #info-popup p { 
+            margin: 0; 
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Conteneur pour le globe -->
+    <div id="globeViz"></div>
+    
+    <!-- Élément HTML pour la pop-up -->
+    <div id="info-popup"></div>
+
+    <script>
+        // 1. Définissez vos points d'intérêt ici (Latitude, Longitude)
+        const myPoints = [
+            { 
+                lat: 48.8566, 
+                lng: 2.3522, 
+                title: 'Paris', 
+                description: 'Capitale de la France. Cliquez pour en savoir plus sur cet emplacement.' 
+            },
+            { 
+                lat: 35.6895, 
+                lng: 139.6917, 
+                title: 'Tokyo', 
+                description: 'Une métropole fascinante mêlant ultramoderne et traditionnel.' 
+            },
+            { 
+                lat: 40.7128, 
+                lng: -74.0060, 
+                title: 'New York', 
+                description: 'La ville qui ne dort jamais.' 
+            }
+        ];
+
+        const popup = document.getElementById('info-popup');
+
+        // 2. Initialisation du Globe
+        const world = Globe()
+            (document.getElementById('globeViz'))
+            // Texture de la terre (image satellite)
+            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+            // Image pour le fond spatial
+            .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+            
+            // Configuration des points
+            .pointsData(myPoints)
+            .pointAltitude(0.05) // Hauteur du point par rapport au sol
+            .pointColor(() => '#ff3333') // Couleur rouge
+            .pointRadius(0.5) // Taille du point
+            
+            // 3. Gestion du clic sur un point
+            .onPointClick((point, event) => {
+                // Afficher et positionner la pop-up sous la souris
+                popup.style.display = 'block';
+                popup.style.left = `${event.clientX}px`;
+                popup.style.top = `${event.clientY}px`;
+                
+                // Remplir le contenu HTML
+                popup.innerHTML = `
+                    <h3>${point.title}</h3>
+                    <p>${point.description}</p>
+                    <p><em>Coordonnées : ${point.lat}°, ${point.lng}°</em></p>
+                `;
+            })
+            
+            // 4. Cacher la pop-up si on clique ailleurs sur le globe
+            .onGlobeClick(() => {
+                popup.style.display = 'none';
+            });
+
+        // Rotation automatique optionnelle
+        world.controls().autoRotate = true;
+        world.controls().autoRotateSpeed = 0.5;
+
+        // Ajuster la taille si on redimensionne la fenêtre
+        window.addEventListener('resize', () => {
+            world.width(window.innerWidth);
+            world.height(window.innerHeight);
+        });
+    </script>
+</body>
+</html>
